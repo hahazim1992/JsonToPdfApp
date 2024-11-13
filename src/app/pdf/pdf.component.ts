@@ -25,11 +25,13 @@ export class PdfComponent implements OnInit {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     // Logo Image (replace with an actual logo URL or base64)
-    const logoUrl = 'assets/image/4jpeg.jpeg';
-    const imgProps = await doc.getImageProperties(logoUrl);
+    const logoUrlCimb = 'assets/image/logo.svg';
+    const logoUrlCimbIslamic = 'assets/image/logo-CIMB-Islamic.svg';
+    const imgProps = await doc.getImageProperties(logoUrlCimb);
     const logoWidth = 30;
     const logoHeight = (imgProps.height * logoWidth) / imgProps.width;
-    doc.addImage(logoUrl, 'PNG', 10, 10, logoWidth, logoHeight);
+    doc.addImage(logoUrlCimb, 'PNG', 10, 10, logoWidth, logoHeight);
+    doc.addImage(logoUrlCimbIslamic, 'PNG', 10, 10, logoWidth, logoHeight);
 
     // Header Title
     doc.setFontSize(18);
