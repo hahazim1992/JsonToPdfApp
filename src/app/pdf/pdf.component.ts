@@ -29,28 +29,57 @@ export class PdfComponent implements OnInit {
     const logoUrlCimb = 'assets/image/logo.svg';
     const logoUrlCimbIslamic = 'assets/image/logo-CIMB-Islamic.svg';
 
-    // Add the first logo
+    // Fetch and parse the first SVG
     const logoCimb = await fetch(logoUrlCimb).then(res => res.text());
+    console.log('Logo CIMB:', logoCimb); // Debugging log
     const svgElementCimb = new DOMParser().parseFromString(logoCimb, 'image/svg+xml').documentElement;
-    svg2pdf(svgElementCimb, doc, { x: 10, y: 10, width: 30 });
 
-    // Add the second logo
+    // Fetch and parse the second SVG
     const logoCimbIslamic = await fetch(logoUrlCimbIslamic).then(res => res.text());
+    console.log('Logo CIMB Islamic:', logoCimbIslamic); // Debugging log
     const svgElementCimbIslamic = new DOMParser().parseFromString(logoCimbIslamic, 'image/svg+xml').documentElement;
-    svg2pdf(svgElementCimbIslamic, doc, { x: 50, y: 10, width: 30 });
+
+    // Function to convert SVG to Canvas
+    const svgToCanvas = (svgElement: Node) => {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const svgString = new XMLSerializer().serializeToString(svgElement);
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+          }
+          resolve(canvas);
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
+      });
+    };
+
+    // Convert SVGs to Canvas
+    const canvasCimb = await svgToCanvas(svgElementCimb) as HTMLCanvasElement;
+    const canvasCimbIslamic = await svgToCanvas(svgElementCimbIslamic) as HTMLCanvasElement;
+
+    // Add the first logo to the main PDF
+    doc.addImage(canvasCimb.toDataURL('image/png'), 'PNG', 10, 10, 30, 30);
+
+    // Add the second logo to the main PDF with a small gap
+    doc.addImage(canvasCimbIslamic.toDataURL('image/png'), 'PNG', 50, 10, 30, 30);
 
     // Header Title
     doc.setFontSize(18);
     doc.setTextColor(40);
-    doc.text('Confidential Report', pageWidth / 2, 20, { align: 'center' });
+    doc.text('Confidential Report', pageWidth / 2, 50, { align: 'center' });
 
     // Header Line
     doc.setLineWidth(0.5);
-    doc.line(10, 35, pageWidth - 10, 35);
+    doc.line(10, 55, pageWidth - 10, 55);
 
     // Content Table
     autoTable(doc, {
-      startY: 45,
+      startY: 60,
       margin: { left: 10, right: 10 },
       head: [['Field', 'Value']],
       body: [
