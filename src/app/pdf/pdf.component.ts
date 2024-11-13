@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../data.service';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { svg2pdf } from 'svg2pdf.js';
 
 @Component({
   selector: 'app-pdf',
@@ -24,14 +25,19 @@ export class PdfComponent implements OnInit {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Logo Image (replace with an actual logo URL or base64)
+    // Load SVG images
     const logoUrlCimb = 'assets/image/logo.svg';
     const logoUrlCimbIslamic = 'assets/image/logo-CIMB-Islamic.svg';
-    const imgProps = await doc.getImageProperties(logoUrlCimb);
-    const logoWidth = 30;
-    const logoHeight = (imgProps.height * logoWidth) / imgProps.width;
-    doc.addImage(logoUrlCimb, 'PNG', 10, 10, logoWidth, logoHeight);
-    doc.addImage(logoUrlCimbIslamic, 'PNG', 10, 10, logoWidth, logoHeight);
+
+    // Add the first logo
+    const logoCimb = await fetch(logoUrlCimb).then(res => res.text());
+    const svgElementCimb = new DOMParser().parseFromString(logoCimb, 'image/svg+xml').documentElement;
+    svg2pdf(svgElementCimb, doc, { x: 10, y: 10, width: 30 });
+
+    // Add the second logo
+    const logoCimbIslamic = await fetch(logoUrlCimbIslamic).then(res => res.text());
+    const svgElementCimbIslamic = new DOMParser().parseFromString(logoCimbIslamic, 'image/svg+xml').documentElement;
+    svg2pdf(svgElementCimbIslamic, doc, { x: 50, y: 10, width: 30 });
 
     // Header Title
     doc.setFontSize(18);
@@ -48,23 +54,23 @@ export class PdfComponent implements OnInit {
       margin: { left: 10, right: 10 },
       head: [['Field', 'Value']],
       body: [
-      ['Field 1', this.jsonData.field1],
-      ['Field 2', this.jsonData.field2],
-      ['Field 3', this.jsonData.field3]
+        ['Field 1', this.jsonData.field1],
+        ['Field 2', this.jsonData.field2],
+        ['Field 3', this.jsonData.field3]
       ],
       theme: 'grid',
       styles: {
-      halign: 'left',
-      cellPadding: 5,
-      fontSize: 11,
+        halign: 'left',
+        cellPadding: 5,
+        fontSize: 11,
       },
       headStyles: {
-      fillColor: [236, 29, 35], // RGB for #ec1d23
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+        fillColor: [236, 29, 35], // RGB for #ec1d23
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
       },
       bodyStyles: {
-      textColor: [40, 40, 40]
+        textColor: [40, 40, 40]
       }
     });
 
